@@ -1,0 +1,51 @@
+{
+    "app": {
+        "name": "Sample Client",
+        "features": [
+            {
+                "id": "home",
+                "name": "Home"
+            },
+            {
+                "id": "form",
+                "name": "+ Ticket"
+            },
+            {
+                "id": "search",
+                "name": "Data"
+            }
+        ]
+    },
+    "attributes": {
+        "general": [
+            {
+                "id": "name",
+                "type": "string",
+                "required": true,
+                "name": "Name",
+                "description": "Your Name, Duh!"
+            },
+            {
+                "id": "date",
+                "type": "datetime",
+                "required": true,
+                "name": "Date",
+                "description": "Relevant date"
+            }
+        ],
+        "specific": {
+            "platform_a": [
+                {
+                    "id": "kind",
+                    "type": "select",
+                    "required": true,
+                    "name": "Kind of thing",
+                    "options": [
+                        { "id": "kind_1", "name": "kind 1" },
+                        { "id": "kind_2", "name": "kind 2" }
+                    ]
+                }
+            ]
+        }
+    }
+}
