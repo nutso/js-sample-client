@@ -77,6 +77,17 @@ const clearContentContainer = function() {
 }
 
 /**
+ * Create a sub-header (h2) element
+ * @param {string} text text of sub header
+ */
+const getSubHeader = function(text) {
+    let header = document.createElement("h2");
+    header.className = "w3-container w3-text-deep-purple w3-border-bottom";
+    header.textContent = text;
+    return header;
+}
+
+/**
  * Build the form elements (UI)
  * @param {JSON} config client configuration settings
  * @param {HTMLElement} parentElement element to which to add the navigation (via appendChild)
@@ -107,10 +118,27 @@ const buildForm = function(config, parentElement) {
 
         row.appendChild(lbl);
 
+        const createInput = function(elType) {
+            let input = document.createElement(elType);
+            // handle common to all input settings
+            input.id = attr.id;
+            input.classList.add("w3-border");
+            input.classList.add("w3-text-indigo");
+            input.classList.add("w3-round-large");
+
+            // default values ... can be overridden after
+            input.className = "w3-input";
+
+            if(attr["required"])
+                input.required = true;
+
+            return input;
+        };
+
         let input = null;
         switch(attr["type"]) {
             case "select":
-                input = document.createElement("select");
+                input = createInput("select");
                 input.className = "w3-select";
 
                 attr["options"].forEach(option => {
@@ -126,19 +154,15 @@ const buildForm = function(config, parentElement) {
         
                 break;
             case "string":
-                input = document.createElement("input");
-                input.className = "w3-input";
+                input = createInput("input");
                 input.type = "text";
-
                 break;
             case "text":
-                input = document.createElement("textarea");
-                input.className = "w3-input";
+                input = createInput("textarea");
                 input.rows = 4;
                 break;
             case "date":
-                input = document.createElement("input");
-                input.className = "w3-input";
+                input = createInput("input");
                 input.type = "date";
                 break;
             default:
@@ -146,27 +170,24 @@ const buildForm = function(config, parentElement) {
                 console.error("Unsupported attribute type for form", attr["type"], attr);
 
                 // mimic string
-                input = document.createElement("input");
-                input.className = "w3-input";
+                input = createInput("input");
                 input.type = "text";
 
         }
-
-        // handle common to all input settings
-        input.id = attr.id;
-        input.classList.add("w3-border");
-        input.classList.add("w3-text-indigo");
-        input.classList.add("w3-round-large");
-
-        if(attr["required"])
-            input.required = true;
 
         row.appendChild(input);
         return row;
     };
 
+    let div = document.createElement("div");
+    div.className = "w3-container";
+    
+    div.appendChild(getSubHeader(config["app"]["features"].find(function(el) {
+        return el["id"] == "form";
+    })["name"]));
+
     let form = document.createElement("form");
-    form.className = "w3-container";
+    //form.className = "w3-container";
 
     config["attributes"]["general"].forEach(attr => {
         form.appendChild(buildInput(attr));
@@ -184,9 +205,21 @@ const buildForm = function(config, parentElement) {
         // TODO trigger this on platform change
     }
 
-    parentElement.appendChild(form);
+    // <button class="w3-btn w3-blue">Register</button>
+    let submitButton = document.createElement("button");
+    submitButton.className = "w3-btn w3-deep-purple";
+    submitButton.textContent = "Submit";
 
-    return form;
+    let submitRow = document.createElement("div");
+    submitRow.className = "w3-container";
+    submitRow.appendChild(submitButton);
+
+    form.appendChild(submitRow);
+
+    div.appendChild(form);
+    parentElement.appendChild(div);
+
+    return div;
 }
 
 /**
