@@ -68,12 +68,125 @@ const buildContentContainer = function(config, parentElement) {
  * Retrieve and clear the main content container
  */
 const clearContentContainer = function() {
-    // TODO prompt if unsaed changes?
+    // TODO prompt if unsaved changes?
     const content = document.querySelector("#content-main");
     content.innerHTML = '';
     content.className = "w3-container";
     console.log("cleared content", content);
     return content;
+}
+
+/**
+ * Build the form elements (UI)
+ * @param {JSON} config client configuration settings
+ * @param {HTMLElement} parentElement element to which to add the navigation (via appendChild)
+ * @returns {HTMLElement}
+ */
+const buildForm = function(config, parentElement) {
+    if(!config)
+        throw new TypeError("config is required");
+    if(!("attributes" in config))
+        throw new TypeError("'attributes' key not in config");
+    if(!("general" in config["attributes"]))
+        throw new TypeError("'general' key not in config.attributes");
+    // specific attributes not required
+
+    /**
+     * Build a form input field
+     * @param {Object} attr attribute definition to create. Must contain: id, type, name at a minimum
+     * @returns {HTMLElement} div containing the inquiry
+     */
+    const buildInput = function(attr) {
+        let row = document.createElement("div");
+        row.className = "w3-container";
+
+        let lbl = document.createElement("label");
+        lbl.for = attr.id;
+        lbl.textContent = attr.name;
+        lbl.className = "w3-text-deep-purple";
+
+        row.appendChild(lbl);
+
+        let input = null;
+        switch(attr["type"]) {
+            case "select":
+                input = document.createElement("select");
+                input.className = "w3-select";
+
+                attr["options"].forEach(option => {
+                    let selectOption = document.createElement("option");
+                    selectOption.value = option["id"];
+                    selectOption.textContent = option["name"];
+                    input.appendChild(selectOption);
+                });
+
+                if(input.length <= 1) {
+                    input.disabled = true;
+                }
+        
+                break;
+            case "string":
+                input = document.createElement("input");
+                input.className = "w3-input";
+                input.type = "text";
+
+                break;
+            case "text":
+                input = document.createElement("textarea");
+                input.className = "w3-input";
+                input.rows = 4;
+                break;
+            case "date":
+                input = document.createElement("input");
+                input.className = "w3-input";
+                input.type = "date";
+                break;
+            default:
+                // TODO error
+                console.error("Unsupported attribute type for form", attr["type"], attr);
+
+                // mimic string
+                input = document.createElement("input");
+                input.className = "w3-input";
+                input.type = "text";
+
+        }
+
+        // handle common to all input settings
+        input.id = attr.id;
+        input.classList.add("w3-border");
+        input.classList.add("w3-text-indigo");
+        input.classList.add("w3-round-large");
+
+        if(attr["required"])
+            input.required = true;
+
+        row.appendChild(input);
+        return row;
+    };
+
+    let form = document.createElement("form");
+    form.className = "w3-container";
+
+    config["attributes"]["general"].forEach(attr => {
+        form.appendChild(buildInput(attr));
+    });
+
+    if("platforms" in config) {
+        form.appendChild(buildInput({
+            "id": "platform",
+            "name": "Platform",
+            "type": "select",
+            "options": config["platforms"]
+        }));
+    }
+    if("specific" in config["attributes"]) {
+        // TODO trigger this on platform change
+    }
+
+    parentElement.appendChild(form);
+
+    return form;
 }
 
 /**
@@ -135,12 +248,13 @@ const buildNavigation = function(config, parentElement) {
         home.className = "w3-panel";
         home.appendChild(text);
 
+        // TODO other content for 'home'? 
+        // Just do an iframe to a static page?
+
         clearContentContainer().appendChild(home);
     });
     parentElement.querySelector("a#nav-form").addEventListener("click", function() {
-        const content = clearContentContainer();
-        // TODO implement
-        console.log("home clicked");
+        buildForm(config, clearContentContainer());
     });
     parentElement.querySelector("a#nav-search").addEventListener("click", function() {
         const content = clearContentContainer();
