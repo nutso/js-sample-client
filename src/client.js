@@ -50,15 +50,46 @@ const promptToDownloadJsonFile = function(content, filename) {
 /********** HTML UI ***********/
 
 /**
+ * @param {JSON} config client configuration settings
+ * @param {HTMLElement} parentElement element to which to add the navigation (via appendChild)
+ * @returns {HTMLElement} div ready for content
+ */
+const buildContentContainer = function(config, parentElement) {
+    let container = document.createElement("div");
+    container.id = "content-main";
+    container.className = "w3-container"
+
+    parentElement.appendChild(container);
+
+    return container;
+}
+
+/**
+ * Retrieve and clear the main content container
+ */
+const clearContentContainer = function() {
+    // TODO prompt if unsaed changes?
+    const content = document.querySelector("#content-main");
+    content.innerHTML = '';
+    content.className = "w3-container";
+    console.log("cleared content", content);
+    return content;
+}
+
+/**
  * Build the navigation header. (Does not append it to the document.)
  * @param {JSON} config client configuration settings
+ * @param {HTMLElement} parentElement element to which to add the navigation (via appendChild)
  * @returns {HTMLElement} div containing full navigation
  */
-const buildNavigation = function(config) {
+const buildNavigation = function(config, parentElement) {
     if(!config)
         throw new TypeError("config is required");
     if(!("app" in config))
-        throw new TypeError("'app' key not in config")
+        throw new TypeError("'app' key not in config");
+
+    if(!parentElement)
+        throw new TypeError("parentElement is required");
     
     let appConfig = config["app"];
 
@@ -91,6 +122,31 @@ const buildNavigation = function(config) {
     else {
         console.error("app.features key not found in config");
     }
+
+    parentElement.appendChild(nav);
+
+    parentElement.querySelector("a#nav-home").addEventListener("click", function() {
+        console.log("home clicked");
+
+        const text = document.createElement("p");
+        text.textContent = "Home";
+
+        const home = document.createElement("div");
+        home.className = "w3-panel";
+        home.appendChild(text);
+
+        clearContentContainer().appendChild(home);
+    });
+    parentElement.querySelector("a#nav-form").addEventListener("click", function() {
+        const content = clearContentContainer();
+        // TODO implement
+        console.log("home clicked");
+    });
+    parentElement.querySelector("a#nav-search").addEventListener("click", function() {
+        const content = clearContentContainer();
+        console.log("search clicked");
+        // TODO implement
+    });
     
     return nav;
 }
@@ -107,8 +163,12 @@ const runMe = async function() {
     // promptToDownloadJsonFile(config, "src/config.json");
     // promptToDownloadJsonFile(data, "src/data.json");
 
-    document.body.appendChild(buildNavigation(config));
+    buildNavigation(config, document.body);
+    buildContentContainer(config, document.body);
 
 }
 
-runMe();
+runMe().then(function() {
+    // load home page
+    document.querySelector("a#nav-home").click();
+})
